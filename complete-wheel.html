@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tambola Spinning Wheel with AI Commentary</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .header {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            max-width: 1200px;
+            width: 100%;
+            backdrop-filter: blur(10px);
+        }
+
+        .wheel-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .wheel-container {
+            position: relative;
+            display: inline-block;
+            margin: 20px;
+        }
+
+        #wheelCanvas {
+            border-radius: 50%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        #wheelCanvas:hover {
+            transform: scale(1.02);
+        }
+
+        .controls {
+            margin: 20px 0;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+        }
+
+        .btn:hover {
+            background: linear-gradient(45deg, #0056b3, #007bff);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,123,255,0.4);
+        }
+
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .status {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .status-item {
+            text-align: center;
+            background: rgba(0,123,255,0.1);
+            padding: 15px 25px;
+            border-radius: 15px;
+            border: 2px solid rgba(0,123,255,0.2);
+        }
+
+        .status-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .status-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .current-number {
+            font-size: 36px !important;
+            color: #28a745;
+            text-shadow: 0 0 10px rgba(40,167,69,0.3);
+        }
+
+        .commentary-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 5px solid #007bff;
+            position: relative;
+        }
+
+        .commentary-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .commentary-header h3 {
+            margin: 0;
+            color: #007bff;
+            font-size: 1.3em;
+        }
+
+        .ai-icon {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            border-radius: 50%;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .commentary-text {
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #333;
+            min-height: 60px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .loading-indicator {
+            display: none;
+            position: absolute;
+            top: 15px;
+            right: 20px;
+        }
+
+        .loading-indicator.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .numbers-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .numbers-section h3 {
+            margin-bottom: 20px;
+            color: #495057;
+            text-align: center;
+        }
+
+        .numbers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+            gap: 8px;
+        }
+
+        .number-cell {
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .number-called {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            box-shadow: 0 2px 8px rgba(40,167,69,0.3);
+        }
+
+        .number-current {
+            background: linear-gradient(45deg, #ffc107, #fd7e14);
+            color: #212529;
+            animation: pulse 1.5s infinite;
+            box-shadow: 0 0 20px rgba(255,193,7,0.6);
+            transform: scale(1.1);
+        }
+
+        .number-pending {
+            background: white;
+            color: #6c757d;
+            border: 2px solid #dee2e6;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1.1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .api-config {
+            background: rgba(255,255,255,0.9);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+        }
+
+        .api-config input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .api-config label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .volume-control {
+            margin: 10px 0;
+        }
+
+        .volume-slider {
+            width: 200px;
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎯 Tambola Spinning Wheel</h1>
+        <p>AI-Powered Commentary & Interactive Gameplay</p>
+    </div>
+
+    <div class="game-container">
+        <!-- API Configuration -->
+        <div class="api-config">
+            <label for="apiKey">OpenAI API Key (for enhanced commentary):</label>
+            <input type="password" id="apiKey" placeholder="sk-..." value="your_openai_api_key_here">
+        </div>
+
+        <!-- Wheel Section -->
+        <div class="wheel-section">
+            <h2>Spinning Wheel</h2>
+            <div class="wheel-container">
+                <canvas id="wheelCanvas" width="400" height="400"></canvas>
+            </div>
+            
+            <div class="controls">
+                <button class="btn" id="spinBtn">🎰 Spin the Wheel!</button>
+                <button class="btn" id="resetBtn">🔄 Reset Game</button>
+            </div>
+
+            <!-- Volume Control -->
+            <div class="volume-control">
+                <label>🔊 Voice Volume:</label>
+                <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.1" value="0.8">
+                <button class="btn" id="muteBtn" style="font-size: 12px; padding: 8px 16px;">🔇 Mute</button>
+            </div>
+        </div>
+
+        <!-- Status Display -->
+        <div class="status">
+            <div class="status-item">
+                <div class="status-label">Current Number</div>
+                <div class="status-value current-number" id="currentNumber">--</div>
+            </div>
+            <div class="status-item">
+                <div class="status-label">Numbers Called</div>
+                <div class="status-value" id="numbersCount">0/90</div>
+            </div>
+            <div class="status-item">
+                <div class="status-label">Game Progress</div>
+                <div class="status-value" id="gameProgress">0%</div>
+            </div>
+        </div>
+
+        <!-- AI Commentary Section -->
+        <div class="commentary-section">
+            <div class="commentary-header">
+                <div class="ai-icon">AI</div>
+                <h3>Live Commentary</h3>
+                <div class="loading-indicator" id="loadingIndicator">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+            <div class="commentary-text" id="commentaryText">
+                Welcome to Tambola! Spin the wheel to start the game and enjoy AI-powered commentary with creative phrases and exciting announcements!
+            </div>
+        </div>
+
+        <!-- Numbers Grid -->
+        <div class="numbers-section">
+            <h3>📊 Numbers Board (1-90)</h3>
+            <div class="numbers-grid" id="numbersGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        let currentNumber = null;
+        let calledNumbers = [];
+        let isSpinning = false;
+        let isMuted = false;
+        let speechVolume = 0.8;
+
+        // Canvas and Animation
+        let canvas, ctx;
+        let currentRotation = 0;
+        let targetRotation = 0;
+        let spinSpeed = 0;
+        let animationId = null;
+
+        // Wheel Properties
+        const radius = 180;
+        const centerX = 200;
+        const centerY = 200;
+        const segments = 90;
+        const segmentAngle = (2 * Math.PI) / segments;
+
+        // Creative Tambola Phrases
+        const creativePhrases = {
+            1: "Nelson's Column", 2: "One Little Duck", 3: "Cup of Tea", 4: "Knock at the Door", 5: "Man Alive",
+            6: "Tom Mix", 7: "Lucky Seven", 8: "Garden Gate", 9: "Doctor's Orders", 10: "Uncle's Den",
+            11: "Legs Eleven", 12: "One Dozen", 13: "Unlucky for Some", 14: "Valentine's Day", 15: "Young and Keen",
+            16: "Sweet Sixteen", 17: "Dancing Queen", 18: "Coming of Age", 19: "Goodbye Teens", 20: "One Score",
+            21: "Royal Salute", 22: "Two Little Ducks", 23: "Thee and Me", 24: "Two Dozen", 25: "Duck and Dive",
+            26: "Pick and Mix", 27: "Duck and a Crutch", 28: "Duck and its Mate", 29: "Rise and Shine", 30: "Burlington Bertie",
+            31: "Get Up and Run", 32: "Buckle My Shoe", 33: "Dirty Knee", 34: "Ask for More", 35: "Jump and Jive",
+            36: "Three Dozen", 37: "More than Eleven", 38: "Christmas Cake", 39: "Those Famous Steps", 40: "Life Begins",
+            41: "Time for Fun", 42: "Winnie the Pooh", 43: "Down on Your Knee", 44: "Droopy Drawers", 45: "Halfway There",
+            46: "Up to Tricks", 47: "Four and Seven", 48: "Four Dozen", 49: "PC", 50: "Half Century",
+            51: "Tweak of the Thumb", 52: "Danny La Rue", 53: "Here Comes Herbie", 54: "Clean the Floor", 55: "Snakes Alive",
+            56: "Was She Worth It", 57: "Heinz Varieties", 58: "Make Them Wait", 59: "Brighton Line", 60: "Three Score",
+            61: "Baker's Bun", 62: "Turn on the Screw", 63: "Tickle Me", 64: "Red Raw", 65: "Old Age Pension",
+            66: "Clickety Click", 67: "Made in Heaven", 68: "Saving Grace", 69: "Either Way Up", 70: "Three Score and Ten",
+            71: "Bang on the Drum", 72: "Six Dozen", 73: "Queen Bee", 74: "Candy Store", 75: "Strive and Strive",
+            76: "Trombones", 77: "Sunset Strip", 78: "Heaven's Gate", 79: "One More Time", 80: "Eight and Blank",
+            81: "Stop and Run", 82: "Straight on Through", 83: "Time for Tea", 84: "Seven Dozen", 85: "Staying Alive",
+            86: "Between the Sticks", 87: "Torquay in Devon", 88: "Two Fat Ladies", 89: "Nearly There", 90: "Top of the Shop"
+        };
+
+        // Initialize the game
+        function initGame() {
+            canvas = document.getElementById('wheelCanvas');
+            ctx = canvas.getContext('2d');
+            
+            setupEventListeners();
+            drawWheel();
+            updateNumbersGrid();
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            document.getElementById('spinBtn').addEventListener('click', spinWheel);
+            document.getElementById('resetBtn').addEventListener('click', resetGame);
+            document.getElementById('muteBtn').addEventListener('click', toggleMute);
+            document.getElementById('volumeSlider').addEventListener('input', updateVolume);
+            canvas.addEventListener('click', spinWheel);
+        }
+
+        // Draw the spinning wheel
+        function drawWheel() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw segments
+            for (let i = 0; i < segments; i++) {
+                const startAngle = (i * segmentAngle) + currentRotation;
+                const endAngle = ((i + 1) * segmentAngle) + currentRotation;
+                
+                // Create rainbow color
+                const hue = (i / segments) * 360;
+                ctx.fillStyle = `hsl(${hue}, 70%, 60%)`;
+                
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Draw number
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(startAngle + segmentAngle / 2);
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(i + 1, radius - 30, 5);
+                ctx.restore();
+                
+                // Draw border
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(
+                    centerX + Math.cos(startAngle) * radius,
+                    centerY + Math.sin(startAngle) * radius
+                );
+                ctx.stroke();
+            }
+            
+            // Draw center circle
+            ctx.fillStyle = '#333';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 30, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Draw pointer
+            ctx.fillStyle = '#ff4444';
+            ctx.beginPath();
+            ctx.moveTo(centerX + radius + 10, centerY);
+            ctx.lineTo(centerX + radius - 20, centerY - 15);
+            ctx.lineTo(centerX + radius - 20, centerY + 15);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // Spin the wheel
+        function spinWheel() {
+            if (isSpinning) return;
+            
+            const availableNumbers = [];
+            for (let i = 1; i <= 90; i++) {
+                if (!calledNumbers.includes(i)) {
+                    availableNumbers.push(i);
+                }
+            }
+            
+            if (availableNumbers.length === 0) {
+                alert('All numbers have been called! Reset the game to play again.');
+                return;
+            }
+            
+            isSpinning = true;
+            document.getElementById('spinBtn').disabled = true;
+            
+            // Random spin
+            const spins = 5 + Math.random() * 5;
+            const finalAngle = (spins * 2 * Math.PI) + (Math.random() * 2 * Math.PI);
+            targetRotation = currentRotation + finalAngle;
+            spinSpeed = 0.3;
+            
+            animate();
+        }
+
+        // Animation loop
+        function animate() {
+            const rotationDiff = targetRotation - currentRotation;
+            
+            if (Math.abs(rotationDiff) > 0.01) {
+                currentRotation += rotationDiff * 0.05;
+                drawWheel();
+                animationId = requestAnimationFrame(animate);
+            } else {
+                currentRotation = targetRotation;
+                drawWheel();
+                isSpinning = false;
+                document.getElementById('spinBtn').disabled = false;
+                
+                // Calculate selected number
+                const normalizedAngle = (currentRotation % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+                const segmentIndex = Math.floor(((2 * Math.PI - normalizedAngle) + segmentAngle/2) / segmentAngle) % segments;
+                const selectedNumber = segmentIndex + 1;
+                
+                handleNumberSelected(selectedNumber);
+            }
+        }
+
+        // Handle number selection
+        function handleNumberSelected(number) {
+            if (calledNumbers.includes(number)) {
+                // If number already called, spin again
+                setTimeout(spinWheel, 1000);
+                return;
+            }
+            
+            currentNumber = number;
+            calledNumbers.push(number);
+            
+            updateDisplay();
+            generateAICommentary(number);
+        }
+
+        // Update display
+        function updateDisplay() {
+            document.getElementById('currentNumber').textContent = currentNumber || '--';
+            document.getElementById('numbersCount').textContent = `${calledNumbers.length}/90`;
+            document.getElementById('gameProgress').textContent = `${Math.round((calledNumbers.length / 90) * 100)}%`;
+            updateNumbersGrid();
+        }
+
+        // Update numbers grid
+        function updateNumbersGrid() {
+            const grid = document.getElementById('numbersGrid');
+            grid.innerHTML = '';
+            
+            for (let i = 1; i <= 90; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'number-cell';
+                cell.textContent = i;
+                
+                if (i === currentNumber) {
+                    cell.className += ' number-current';
+                } else if (calledNumbers.includes(i)) {
+                    cell.className += ' number-called';
+                } else {
+                    cell.className += ' number-pending';
+                }
+                
+                grid.appendChild(cell);
+            }
+        }
+
+        // Generate digit-first format
+        function getDigitFormat(number) {
+            const digitWords = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+            
+            if (number < 10) {
+                return digitWords[number];
+            } else {
+                const tens = Math.floor(number / 10);
+                const ones = number % 10;
+                return `${digitWords[tens]}-${digitWords[ones]}`;
+            }
+        }
+
+        // Generate AI Commentary
+        async function generateAICommentary(number) {
+            const commentaryElement = document.getElementById('commentaryText');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            
+            const creativePhrase = creativePhrases[number] || "Lucky Number";
+            const digitFormat = getDigitFormat(number);
+            const basicAnnouncement = `${creativePhrase}! Number ${digitFormat}, ${number}!`;
+            
+            // Show loading
+            loadingIndicator.classList.add('active');
+            
+            const apiKey = document.getElementById('apiKey').value;
+            
+            if (!apiKey || apiKey === 'your_openai_api_key_here') {
+                // Fallback commentary
+                const fallbackCommentary = `${basicAnnouncement} What an exciting number, ladies and gentlemen! Keep marking your tickets!`;
+                commentaryElement.textContent = fallbackCommentary;
+                speakText(fallbackCommentary);
+                loadingIndicator.classList.remove('active');
+                return;
+            }
+            
+            try {
+                // Enhanced AI Commentary with OpenAI
+                const gameStage = calledNumbers.length < 15 ? 'early' : 
+                                 calledNumbers.length < 45 ? 'mid' : 
+                                 calledNumbers.length < 75 ? 'late' : 'final';
+                
+                const prompt = `You are an enthusiastic Tambola (Bingo) game host with a cricket commentary style! 
+
+IMPORTANT FORMAT RULES:
+1. Start with the creative tambola phrase: "${creativePhrase}"
+2. Then announce: "Number ${digitFormat}, ${number}"
+3. Follow with exciting cricket-style commentary
+4. Keep the energy high and dramatic!
+
+Creative phrase: ${creativePhrase}
+Number to announce: Number ${digitFormat}, ${number}
+Numbers called so far: ${calledNumbers.length}/90
+Game stage: ${gameStage}
+
+Create an exciting announcement starting with "${creativePhrase}! Number ${digitFormat}, ${number}!" followed by dramatic commentary!`;
+
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-3.5-turbo',
+                        messages: [
+                            {
+                                role: 'system',
+                                content: 'You are an enthusiastic Tambola game host. Create exciting, dramatic announcements for each number drawn with cricket commentary style.'
+                            },
+                            {
+                                role: 'user',
+                                content: prompt
+                            }
+                        ],
+                        max_tokens: 200,
+                        temperature: 1.0
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API request failed: ${response.status}`);
+                }
+
+                const data = await response.json();
+                let aiCommentary = data.choices[0].message.content.trim();
+                
+                // Ensure proper format
+                if (!aiCommentary.toLowerCase().includes(creativePhrase.toLowerCase())) {
+                    aiCommentary = `${basicAnnouncement} ${aiCommentary}`;
+                }
+                
+                commentaryElement.textContent = aiCommentary;
+                speakText(aiCommentary);
+                
+            } catch (error) {
+                console.error('AI Commentary error:', error);
+                const fallbackCommentary = `${basicAnnouncement} What a fantastic draw! The excitement is building!`;
+                commentaryElement.textContent = fallbackCommentary + ' (AI temporarily unavailable)';
+                speakText(fallbackCommentary);
+            } finally {
+                loadingIndicator.classList.remove('active');
+            }
+        }
+
+        // Text-to-speech
+        function speakText(text) {
+            if (!isMuted && 'speechSynthesis' in window) {
+                speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.9;
+                utterance.pitch = 1.1;
+                utterance.volume = speechVolume;
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Toggle mute
+        function toggleMute() {
+            isMuted = !isMuted;
+            const muteBtn = document.getElementById('muteBtn');
+            muteBtn.textContent = isMuted ? '🔊 Unmute' : '🔇 Mute';
+            
+            if (isMuted) {
+                speechSynthesis.cancel();
+            }
+        }
+
+        // Update volume
+        function updateVolume() {
+            speechVolume = document.getElementById('volumeSlider').value;
+        }
+
+        // Reset game
+        function resetGame() {
+            currentNumber = null;
+            calledNumbers = [];
+            currentRotation = 0;
+            targetRotation = 0;
+            
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            
+            isSpinning = false;
+            document.getElementById('spinBtn').disabled = false;
+            
+            updateDisplay();
+            drawWheel();
+            
+            document.getElementById('commentaryText').textContent = 
+                'Game reset! Spin the wheel to start a new exciting game with AI commentary!';
+            
+            speechSynthesis.cancel();
+        }
+
+        // Initialize game when page loads
+        document.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* TambolaVerse Brand Colors */
+    --background: 213 84% 29%; /* Deep Blue #1B4B8C */
+    --foreground: 0 0% 100%;
+
+    --card: 213 84% 29%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 213 84% 29%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 51 100% 70%; /* Yellow #FFD966 */
+    --primary-foreground: 213 84% 29%;
+
+    --secondary: 124 61% 71%; /* Green #7AE582 */
+    --secondary-foreground: 213 84% 29%;
+
+    --muted: 213 30% 45%;
+    --muted-foreground: 0 0% 80%;
+
+    --accent: 187 100% 39%; /* Teal #00C4CC */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 100% 75%; /* Pink #FF7F7F */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 213 30% 50%;
+    --input: 213 30% 40%;
+    --ring: 51 100% 70%;
+
+    --radius: 1rem;
+
+    /* Tambola specific colors */
+    --tambola-deep-blue: 213 84% 29%;
+    --tambola-yellow: 51 100% 70%;
+    --tambola-green: 124 61% 71%;
+    --tambola-pink: 0 100% 75%;
+    --tambola-teal: 187 100% 39%;
+
+    --sidebar-background: 213 84% 25%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 51 100% 70%;
+    --sidebar-primary-foreground: 213 84% 29%;
+    --sidebar-accent: 213 30% 35%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 213 30% 40%;
+    --sidebar-ring: 51 100% 70%;
+  }
+
+  .dark {
+    /* Dark mode uses slightly darker versions */
+    --background: 213 84% 20%;
+    --foreground: 0 0% 100%;
+
+    --card: 213 84% 20%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 213 84% 20%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 51 100% 70%;
+    --primary-foreground: 213 84% 20%;
+
+    --secondary: 124 61% 71%;
+    --secondary-foreground: 213 84% 20%;
+
+    --muted: 213 30% 35%;
+    --muted-foreground: 0 0% 70%;
+
+    --accent: 187 100% 39%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 100% 75%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 213 30% 40%;
+    --input: 213 30% 35%;
+    --ring: 51 100% 70%;
+
+    --sidebar-background: 213 84% 15%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 51 100% 70%;
+    --sidebar-primary-foreground: 213 84% 15%;
+    --sidebar-accent: 213 30% 25%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 213 30% 30%;
+    --sidebar-ring: 51 100% 70%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
