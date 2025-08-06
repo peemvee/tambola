@@ -1,4 +1,16 @@
-# Welcome to your Lovable project
+# TambolaVerse - Multiplayer Tambola Game
+
+A modern, interactive multiplayer Tambola (Bingo) game built with React, TypeScript, and AI-powered commentary.
+
+## Features
+
+- 🎡 **Interactive Number Wheel** with smooth spinning animations
+- 🤖 **AI Commentary** powered by OpenAI for engaging game hosting
+- 🔄 **Auto-Spin Mode** with intelligent 6-second countdown timer
+- 📊 **Real-time Statistics** and game progress tracking
+- 🎮 **Multiple Game Modes** - Manual and assisted gameplay
+- 📱 **Responsive Design** that works on all devices
+- 🎨 **Modern UI/UX** with Tailwind CSS and Framer Motion animations
 
 ## Project info
 
@@ -59,6 +71,9 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+- Framer Motion
+- OpenAI API
+- Web Speech API
 
 ## How can I deploy this project?
 
@@ -71,3 +86,7 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+---
+
+*Last updated: August 6th, 2025 at 9:00 PM*
